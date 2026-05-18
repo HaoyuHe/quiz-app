@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>真实文件解析测试</title>
+  <script src="libs/mammoth.browser.min.js"></script>
+</head>
+<body>
+  <h1>真实题库文件解析测试</h1>
+  <input type="file" id="file-input" accept=".docx">
+  <button onclick="parseFile()">解析</button>
+  <pre id="result" style="white-space: pre-wrap; margin-top: 20px; padding: 20px; background: #f5f5f5; border-radius: 8px;"></pre>
+  
+  <script>
+    async function parseFile() {
+      const fileInput = document.getElementById('file-input');
+      const resultDiv = document.getElementById('result');
+      
+      if (!fileInput.files[0]) {
+        resultDiv.textContent = '请先选择文件';
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      resultDiv.textContent = '正在解析...';
+      
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        
+        // 显示前 3000 字符
+        const text = result.value;
+        resultDiv.textContent = '文件内容（前3000字符）：\n\n' + text.substring(0, 3000);
+        
+        // 同时输出到控制台
+        console.log('完整内容:', text);
+        console.log('内容长度:', text.length);
+      } catch (err) {
+        resultDiv.textContent = '解析失败: ' + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
