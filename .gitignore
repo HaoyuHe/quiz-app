@@ -11,3 +11,10 @@ Thumbs.db
 # 临时文件
 *.tmp
 *.log
+
+# 数据文件（各设备独立）
+data/
+
+# 隧道工具
+cloudflared
+ltm.lnk
