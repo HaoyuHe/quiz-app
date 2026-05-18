@@ -1,0 +1,244 @@
+[
+  {
+    "id": "sample_1",
+    "question": "HTML中，哪个标签用于定义最大的标题？",
+    "type": "single",
+    "options": [
+      "<heading>",
+      "<h6>",
+      "<h1>",
+      "<head>"
+    ],
+    "answer": "C",
+    "explanation": "<h1>标签定义HTML中最大的标题，<h6>定义最小的标题。",
+    "category": "HTML基础",
+    "difficulty": 1,
+    "source": "示例题库",
+    "createdAt": "2026-05-18T14:29:31.702Z",
+    "bankId": "mpbavp9y_791y4i"
+  },
+  {
+    "id": "sample_2",
+    "question": "CSS中，以下哪个属性用于改变文本颜色？",
+    "type": "single",
+    "options": [
+      "text-color",
+      "font-color",
+      "color",
+      "text-style"
+    ],
+    "answer": "C",
+    "explanation": "CSS的color属性用于设置文本的前景色（文本颜色）。",
+    "category": "CSS基础",
+    "difficulty": 1,
+    "source": "示例题库",
+    "createdAt": "2026-05-18T14:29:31.703Z",
+    "bankId": "mpbavp9y_791y4i"
+  },
+  {
+    "id": "sample_3",
+    "question": "JavaScript中，typeof null 的返回值是什么？",
+    "type": "single",
+    "options": [
+      "\"null\"",
+      "\"undefined\"",
+      "\"object\"",
+      "\"boolean\""
+    ],
+    "answer": "C",
+    "explanation": "这是JavaScript的一个历史遗留bug，typeof null 返回 \"object\"。",
+    "category": "JavaScript基础",
+    "difficulty": 2,
+    "source": "示例题库",
+    "createdAt": "2026-05-18T14:29:31.703Z",
+    "bankId": "mpbavp9y_791y4i"
+  },
+  {
+    "id": "sample_4",
+    "question": "以下哪些是JavaScript的基本数据类型？（多选）",
+    "type": "multiple",
+    "options": [
+      "String",
+      "Number",
+      "Array",
+      "Boolean",
+      "Object",
+      "Undefined"
+    ],
+    "answer": "ABDF",
+    "explanation": "JavaScript的基本数据类型包括：String、Number、Boolean、Undefined、Null、Symbol、BigInt。Array和Object是引用类型。",
+    "category": "JavaScript基础",
+    "difficulty": 2,
+    "source": "示例题库",
+    "createdAt": "2026-05-18T14:29:31.703Z",
+    "bankId": "mpbavp9y_791y4i"
+  },
+  {
+    "id": "sample_5",
+    "question": "HTTP状态码404表示什么？",
+    "type": "single",
+    "options": [
+      "服务器内部错误",
+      "请求成功",
+      "资源未找到",
+      "请求被拒绝"
+    ],
+    "answer": "C",
+    "explanation": "404 Not Found 表示服务器无法找到请求的资源。",
+    "category": "网络基础",
+    "difficulty": 1,
+    "source": "示例题库",
+    "createdAt": "2026-05-18T14:29:31.703Z",
+    "bankId": "mpbavp9y_791y4i"
+  },
+  {
+    "id": "sample_6",
+    "question": "TCP协议是面向连接的协议。",
+    "type": "judgment",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "answer": "正确",
+    "explanation": "TCP（传输控制协议）是面向连接的、可靠的传输层协议，通过三次握手建立连接。",
+    "category": "网络基础",
+    "difficulty": 2,
+    "source": "示例题库",
+    "createdAt": "2026-05-18T14:29:31.703Z",
+    "bankId": "mpbavp9y_791y4i"
+  },
+  {
+    "id": "sample_7",
+    "question": "在CSS中，display: flex 和 display: grid 的区别是什么？",
+    "type": "single",
+    "options": [
+      "没有区别",
+      "Flex是一维布局，Grid是二维布局",
+      "Grid是一维布局，Flex是二维布局",
+      "Flex只能水平排列"
+    ],
+    "answer": "B",
+    "explanation": "Flexbox是一维布局模型（沿主轴方向），Grid是二维布局模型（同时控制行和列）。",
+    "category": "CSS进阶",
+    "difficulty": 3,
+    "source": "示例题库",
+    "createdAt": "2026-05-18T14:29:31.703Z",
+    "bankId": "mpbavp9y_791y4i"
+  },
+  {
+    "id": "sample_8",
+    "question": "以下哪个方法可以阻止事件冒泡？",
+    "type": "single",
+    "options": [
+      "event.preventDefault()",
+      "event.stopPropagation()",
+      "event.cancelBubble()",
+      "event.stopEvent()"
+    ],
+    "answer": "B",
+    "explanation": "event.stopPropagation() 用于阻止事件冒泡，而 event.preventDefault() 用于阻止默认行为。",
+    "category": "JavaScript进阶",
+    "difficulty": 3,
+    "source": "示例题库",
+    "createdAt": "2026-05-18T14:29:31.703Z",
+    "bankId": "mpbavp9y_791y4i"
+  },
+  {
+    "id": "sample_9",
+    "question": "React中，useState Hook返回一个包含两个元素的数组，第一个是状态值，第二个是更新函数。",
+    "type": "judgment",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "answer": "正确",
+    "explanation": "const [state, setState] = useState(initialValue) 是useState的标准用法。",
+    "category": "React",
+    "difficulty": 2,
+    "source": "示例题库",
+    "createdAt": "2026-05-18T14:29:31.703Z",
+    "bankId": "mpbavp9y_791y4i"
+  },
+  {
+    "id": "sample_10",
+    "question": "Git中，用于查看提交历史的命令是？",
+    "type": "single",
+    "options": [
+      "git status",
+      "git log",
+      "git diff",
+      "git show"
+    ],
+    "answer": "B",
+    "explanation": "git log 命令用于查看项目的提交历史记录。",
+    "category": "开发工具",
+    "difficulty": 1,
+    "source": "示例题库",
+    "createdAt": "2026-05-18T14:29:31.703Z",
+    "bankId": "mpbavp9y_791y4i"
+  },
+  {
+    "id": "sample_11",
+    "question": "SQL中，用于删除表中所有数据但保留表结构的语句是？",
+    "type": "single",
+    "options": [
+      "DROP TABLE",
+      "DELETE FROM",
+      "TRUNCATE TABLE",
+      "REMOVE TABLE"
+    ],
+    "answer": "C",
+    "explanation": "TRUNCATE TABLE 用于快速删除表中所有行，比 DELETE 更快且重置自增ID。DROP TABLE 会删除整个表。",
+    "category": "数据库",
+    "difficulty": 2,
+    "source": "示例题库",
+    "createdAt": "2026-05-18T14:29:31.703Z",
+    "bankId": "mpbavp9y_791y4i"
+  },
+  {
+    "id": "sample_12",
+    "question": "以下哪些是有效的HTTP请求方法？（多选）",
+    "type": "multiple",
+    "options": [
+      "GET",
+      "POST",
+      "SEND",
+      "PUT",
+      "DELETE",
+      "FETCH"
+    ],
+    "answer": "ABDE",
+    "explanation": "HTTP标准请求方法包括：GET、POST、PUT、DELETE、PATCH、HEAD、OPTIONS等。SEND和FETCH不是标准HTTP方法。",
+    "category": "网络基础",
+    "difficulty": 2,
+    "source": "示例题库",
+    "createdAt": "2026-05-18T14:29:31.703Z",
+    "bankId": "mpbavp9y_791y4i"
+  },
+  {
+    "question": "测试题1",
+    "type": "single",
+    "options": [
+      "A选项",
+      "B选项",
+      "C选项",
+      "D选项"
+    ],
+    "answer": "A",
+    "id": "mpbax393_0ao7w5",
+    "bankId": "mpbavp9y_791y4i",
+    "createdAt": "2026-05-18T14:30:36.471Z"
+  },
+  {
+    "question": "判断题测试",
+    "type": "judgment",
+    "options": [
+      "正确",
+      "错误"
+    ],
+    "answer": "正确",
+    "id": "mpbax393_7vwv3n",
+    "bankId": "mpbavp9y_791y4i",
+    "createdAt": "2026-05-18T14:30:36.471Z"
+  }
+]

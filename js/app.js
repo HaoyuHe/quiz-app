@@ -1051,11 +1051,7 @@ const DataManage = {
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     await App.init();
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js')
-        .then((reg) => console.log('Service Worker 注册成功'))
-        .catch((err) => console.log('Service Worker 注册失败', err));
-    }
+    // 不再注册 Service Worker，由后端服务器负责
   } catch (err) {
     console.error('初始化失败:', err);
   }
