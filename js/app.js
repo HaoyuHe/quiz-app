@@ -52,13 +52,17 @@ const App = {
       overview.classList.add('hidden');
     }
 
-    // 错题数量
+    // 错题数量 - 新版UI（徽章和小圆点）
     const wrongBadge = document.getElementById('wrong-count-badge');
+    const wrongDot = document.getElementById('wrong-count-dot');
     if (wrongCount > 0) {
       wrongBadge.classList.remove('hidden');
+      wrongDot.classList.remove('hidden');
       document.getElementById('wrong-count').textContent = wrongCount;
+      wrongDot.textContent = wrongCount > 99 ? '99+' : wrongCount;
     } else {
       wrongBadge.classList.add('hidden');
+      wrongDot.classList.add('hidden');
     }
 
     // 统计
@@ -66,7 +70,6 @@ const App = {
     if (stats.totalQuestions > 0 || stats.recordCount > 0) {
       homeStats.classList.remove('hidden');
       document.getElementById('stat-total').textContent = stats.totalQuestions;
-      document.getElementById('stat-practiced').textContent = stats.totalPracticed;
       document.getElementById('stat-accuracy').textContent = stats.accuracy + '%';
       document.getElementById('stat-wrong').textContent = stats.wrongCount;
     } else {
@@ -89,13 +92,13 @@ const App = {
 
   _setupGreeting() {
     const hour = new Date().getHours();
-    let greeting = '开始今天的学习吧！';
-    if (hour < 6) greeting = '夜深了，注意休息哦！';
-    else if (hour < 9) greeting = '早上好，新的一天开始了！';
-    else if (hour < 12) greeting = '上午好，学习效率最高的时候！';
-    else if (hour < 14) greeting = '中午好，休息一下再继续！';
-    else if (hour < 18) greeting = '下午好，继续加油！';
-    else if (hour < 22) greeting = '晚上好，今天收获满满！';
+    let greeting = '开始学习吧！';
+    if (hour < 6) greeting = '夜深了，注意休息哦';
+    else if (hour < 9) greeting = '早上好呀';
+    else if (hour < 12) greeting = '上午好，学习效率最高的时候';
+    else if (hour < 14) greeting = '中午好，休息一下再继续';
+    else if (hour < 18) greeting = '下午好，继续加油';
+    else if (hour < 22) greeting = '晚上好呀';
     document.getElementById('greeting-text').textContent = greeting;
   },
 

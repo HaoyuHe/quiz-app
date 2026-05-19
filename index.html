@@ -6,7 +6,7 @@
   <title>智能学习助手</title>
   <!-- PWA 配置 -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#3b82f6">
+  <meta name="theme-color" content="#7CB342">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="学习助手">
@@ -21,10 +21,11 @@
         extend: {
           fontFamily: { sans: ['system-ui', 'sans-serif'] },
           colors: {
-            primary: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8a' },
+            primary: { 50:'#F1F8E9',100:'#DCEDC8',200:'#C5E1A5',300:'#AED581',400:'#9CCC65',500:'#7CB342',600:'#689F38',700:'#558B2F',800:'#33691E',900:'#1B5E20' },
+            accent: { 50:'#FFF8E1',100:'#FFECB3',200:'#FFE082',300:'#FFD54F',400:'#FFCA28',500:'#FFC107',600:'#FFB300',700:'#FFA000',800:'#FF8F00',900:'#FF6F00' },
             success: { 50:'#f0fdf4',100:'#dcfce7',400:'#4ade80',500:'#22c55e',600:'#16a34a' },
             warning: { 50:'#fffbeb',100:'#fef3c7',400:'#fbbf24',500:'#f59e0b',600:'#d97706' },
-            danger:  { 50:'#fef2f2',100:'#fee2e2',400:'#f87171',500:'#ef4444',600:'#dc2626' }
+            danger:  { 50:'#FFEBEE',100:'#FFCDD2',200:'#EF9A9A',300:'#E57373',400:'#EF5350',500:'#F44336',600:'#E53935',700:'#D32F2F',800:'#C62828',900:'#B71C1C' }
           }
         }
       }
@@ -35,13 +36,13 @@
     .page.active { display: block; opacity: 1; }
     .option-btn { transition: all 0.2s ease; }
     .option-btn:hover:not(.disabled) { transform: translateX(4px); }
-    .option-btn.selected { border-color: #3b82f6; background-color: #eff6ff; }
-    .option-btn.correct { border-color: #22c55e; background-color: #f0fdf4; }
-    .option-btn.wrong { border-color: #ef4444; background-color: #fef2f2; }
+    .option-btn.selected { border-color: #7CB342; background-color: #F1F8E9; }
+    .option-btn.correct { border-color: #66BB6A; background-color: #E8F5E9; }
+    .option-btn.wrong { border-color: #EF5350; background-color: #FFEBEE; }
     .progress-bar { transition: width 0.5s ease; }
     .card-hover { transition: all 0.3s ease; }
-    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
-    .drop-zone.dragover { border-color: #3b82f6; background-color: #eff6ff; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(124,179,66,0.15); }
+    .drop-zone.dragover { border-color: #7CB342; background-color: #F1F8E9; }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -50,13 +51,13 @@
     .toast-out { animation: slideOut 0.3s ease forwards; }
     @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.05); } 70% { transform: scale(0.9); } 100% { transform: scale(1); opacity: 1; } }
     .bounce-in { animation: bounceIn 0.5s ease; }
-    @keyframes pulse-danger { 0%, 100% { color: #ef4444; } 50% { color: #fca5a5; } }
+    @keyframes pulse-danger { 0%, 100% { color: #EF5350; } 50% { color: #EF9A9A; } }
     .timer-warning { animation: pulse-danger 1s infinite; }
-    .checkbox-custom:checked { background-color: #3b82f6; border-color: #3b82f6; }
+    .checkbox-custom:checked { background-color: #7CB342; border-color: #7CB342; }
     .checkbox-custom:checked::after { content: '✓'; color: white; font-weight: bold; }
   </style>
 </head>
-<body class="bg-gray-50 font-sans min-h-screen">
+<body class="bg-white font-sans min-h-screen">
 
   <!-- Toast容器 -->
   <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
@@ -64,29 +65,37 @@
   <!-- ========== 首页 ========== -->
   <div id="page-home" class="page active">
     <div class="min-h-screen flex flex-col">
-      <nav class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-10">
-        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+      <!-- 顶部欢迎区 -->
+      <div class="bg-gradient-to-br from-primary-50 to-primary-100 px-5 pt-12 pb-6">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-primary-500">🌿</span>
+              <span class="text-xs font-medium text-primary-600 tracking-wide">每日学习</span>
             </div>
-            <div>
-              <h1 class="text-lg font-bold text-gray-800">智能学习助手</h1>
-              <p class="text-xs text-gray-400">高效练习，轻松备考</p>
-            </div>
+            <h2 class="text-2xl font-bold text-primary-800" id="greeting-text">晚上好呀</h2>
+            <p class="text-sm text-primary-600 mt-1">今天也是进步的一天~</p>
+          </div>
+          <div class="w-12 h-12 bg-primary-500 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-200">
+            <span class="text-2xl">🌱</span>
           </div>
         </div>
-      </nav>
+      </div>
 
-      <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-6">
-        <!-- 欢迎区 -->
-        <div class="text-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-800 mb-1" id="greeting-text">开始今天的学习吧！</h2>
-          <p class="text-gray-500">导入题目，按库练习，查漏补缺</p>
+      <main class="flex-1 max-w-4xl mx-auto w-full px-4 -mt-4">
+        <!-- 今日目标卡片 -->
+        <div id="home-goal-card" class="hidden bg-white rounded-2xl p-4 mb-5 shadow-lg shadow-primary-100/50 border border-primary-100">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-semibold text-primary-800">今日目标</span>
+            <span class="text-sm text-primary-500 font-bold" id="goal-progress-text">0/50</span>
+          </div>
+          <div class="h-2.5 bg-primary-100 rounded-full overflow-hidden">
+            <div id="goal-progress-bar" class="h-full bg-gradient-to-r from-primary-400 to-primary-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
         </div>
 
         <!-- 题库概览 -->
-        <div id="bank-overview" class="hidden mb-6">
+        <div id="bank-overview" class="hidden mb-5">
           <div class="flex items-center justify-between mb-3">
             <h3 class="font-semibold text-gray-800">题库概览</h3>
             <button onclick="App.navigate('bank-manage')" class="text-sm text-primary-500 hover:underline">管理题库</button>
@@ -94,85 +103,139 @@
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="bank-overview-list"></div>
         </div>
 
-        <!-- 功能卡片 -->
-        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <div class="card-hover bg-white rounded-2xl p-5 border border-gray-100 cursor-pointer" onclick="App.navigate('import')">
-            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mb-3">
-              <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        <!-- 快捷功能入口 -->
+        <div class="grid grid-cols-4 gap-3 mb-5">
+          <div class="text-center cursor-pointer group" onclick="App.navigate('import')">
+            <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:bg-amber-100 transition-colors shadow-sm">
+              <span class="text-2xl">📖</span>
             </div>
-            <h3 class="font-semibold text-gray-800 mb-1">导入题库</h3>
-            <p class="text-sm text-gray-500">上传Word或PDF</p>
+            <span class="text-xs text-gray-600">导入</span>
+          </div>
+          <div class="text-center cursor-pointer group" onclick="App.navigate('practice-setup')">
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-100 transition-colors shadow-sm">
+              <span class="text-2xl">✏️</span>
+            </div>
+            <span class="text-xs text-gray-600">练习</span>
+          </div>
+          <div class="text-center cursor-pointer group" onclick="App.navigate('exam-setup')">
+            <div class="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:bg-pink-100 transition-colors shadow-sm">
+              <span class="text-2xl">📝</span>
+            </div>
+            <span class="text-xs text-gray-600">考试</span>
+          </div>
+          <div class="text-center cursor-pointer group" onclick="App.navigate('wrong-book')">
+            <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-2 group-hover:bg-orange-100 transition-colors shadow-sm relative">
+              <span class="text-2xl">📕</span>
+              <span id="wrong-count-dot" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">0</span>
+            </div>
+            <span class="text-xs text-gray-600">错题</span>
+          </div>
+        </div>
+
+        <!-- 功能卡片列表 -->
+        <div class="space-y-3 mb-5">
+          <div class="card-hover bg-white rounded-2xl p-4 border border-gray-100 cursor-pointer" onclick="App.navigate('import')">
+            <div class="flex items-center gap-4">
+              <div class="w-11 h-11 bg-amber-50 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-gray-800">导入题库</h3>
+                <p class="text-xs text-gray-400">上传 Word / PDF 格式</p>
+              </div>
+              <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </div>
           </div>
 
-          <div class="card-hover bg-white rounded-2xl p-5 border border-gray-100 cursor-pointer" onclick="App.navigate('practice-setup')">
-            <div class="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center mb-3">
-              <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            </div>
-            <h3 class="font-semibold text-gray-800 mb-1">抽查练习</h3>
-            <p class="text-sm text-gray-500">随机快速练习</p>
-          </div>
-
-          <div class="card-hover bg-white rounded-2xl p-5 border border-gray-100 cursor-pointer" onclick="App.navigate('exam-setup')">
-            <div class="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center mb-3">
-              <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <h3 class="font-semibold text-gray-800 mb-1">模拟考试</h3>
-            <p class="text-sm text-gray-500">限时完整测试</p>
-          </div>
-
-          <div class="card-hover bg-white rounded-2xl p-5 border border-gray-100 cursor-pointer" onclick="App.navigate('wrong-book')">
-            <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center mb-3">
-              <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-            </div>
-            <h3 class="font-semibold text-gray-800 mb-1">错题本</h3>
-            <p class="text-sm text-gray-500">复习薄弱环节</p>
-            <div id="wrong-count-badge" class="hidden mt-2 bg-red-50 text-red-500 px-2 py-0.5 rounded-full text-xs font-medium inline-block">
-              <span id="wrong-count">0</span>道错题
+          <div class="card-hover bg-white rounded-2xl p-4 border border-gray-100 cursor-pointer" onclick="App.navigate('practice-setup')">
+            <div class="flex items-center gap-4">
+              <div class="w-11 h-11 bg-blue-50 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-gray-800">抽查练习</h3>
+                <p class="text-xs text-gray-400">随机快速练习</p>
+              </div>
+              <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
           </div>
 
-          <div class="card-hover bg-white rounded-2xl p-5 border border-gray-100 cursor-pointer" onclick="App.navigate('history')">
-            <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center mb-3">
-              <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          <div class="card-hover bg-white rounded-2xl p-4 border border-gray-100 cursor-pointer" onclick="App.navigate('exam-setup')">
+            <div class="flex items-center gap-4">
+              <div class="w-11 h-11 bg-pink-50 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-gray-800">模拟考试</h3>
+                <p class="text-xs text-gray-400">限时完整测试</p>
+              </div>
+              <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
-            <h3 class="font-semibold text-gray-800 mb-1">学习记录</h3>
-            <p class="text-sm text-gray-500">查看历史报告</p>
           </div>
 
-          <div class="card-hover bg-white rounded-2xl p-5 border border-gray-100 cursor-pointer" onclick="App.navigate('data-manage')">
-            <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center mb-3">
-              <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+          <div class="card-hover bg-white rounded-2xl p-4 border border-gray-100 cursor-pointer" onclick="App.navigate('wrong-book')">
+            <div class="flex items-center gap-4">
+              <div class="w-11 h-11 bg-orange-50 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-gray-800">错题本</h3>
+                <p class="text-xs text-gray-400">复习薄弱环节</p>
+              </div>
+              <div id="wrong-count-badge" class="hidden bg-orange-100 text-orange-600 px-2.5 py-1 rounded-full text-xs font-semibold">
+                <span id="wrong-count">0</span>题
+              </div>
+              <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
-            <h3 class="font-semibold text-gray-800 mb-1">数据管理</h3>
-            <p class="text-sm text-gray-500">导入导出备份</p>
+          </div>
+
+          <div class="card-hover bg-white rounded-2xl p-4 border border-gray-100 cursor-pointer" onclick="App.navigate('history')">
+            <div class="flex items-center gap-4">
+              <div class="w-11 h-11 bg-purple-50 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-gray-800">学习记录</h3>
+                <p class="text-xs text-gray-400">查看历史报告</p>
+              </div>
+              <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </div>
+          </div>
+
+          <div class="card-hover bg-white rounded-2xl p-4 border border-gray-100 cursor-pointer" onclick="App.navigate('data-manage')">
+            <div class="flex items-center gap-4">
+              <div class="w-11 h-11 bg-indigo-50 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-gray-800">数据管理</h3>
+                <p class="text-xs text-gray-400">导入导出备份</p>
+              </div>
+              <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </div>
           </div>
         </div>
 
         <!-- 快速统计 -->
-        <div id="home-stats" class="hidden bg-white rounded-2xl p-5 border border-gray-100">
-          <h3 class="font-semibold text-gray-800 mb-4">学习概览</h3>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="text-center">
-              <div class="text-2xl font-bold text-primary-500" id="stat-total">0</div>
-              <div class="text-xs text-gray-500 mt-1">题库总量</div>
+        <div id="home-stats" class="hidden bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+          <div class="grid grid-cols-3 gap-3">
+            <div class="bg-amber-50 rounded-xl p-3 text-center">
+              <div class="text-2xl font-bold text-amber-500" id="stat-total">0</div>
+              <div class="text-xs text-gray-500 mt-1">总题数</div>
             </div>
-            <div class="text-center">
-              <div class="text-2xl font-bold text-green-500" id="stat-practiced">0</div>
-              <div class="text-xs text-gray-500 mt-1">已练习</div>
-            </div>
-            <div class="text-center">
-              <div class="text-2xl font-bold text-orange-500" id="stat-accuracy">0%</div>
-              <div class="text-xs text-gray-500 mt-1">正确率</div>
-            </div>
-            <div class="text-center">
+            <div class="bg-red-50 rounded-xl p-3 text-center">
               <div class="text-2xl font-bold text-red-500" id="stat-wrong">0</div>
-              <div class="text-xs text-gray-500 mt-1">错题数</div>
+              <div class="text-xs text-gray-500 mt-1">错题</div>
+            </div>
+            <div class="bg-green-50 rounded-xl p-3 text-center">
+              <div class="text-2xl font-bold text-green-500" id="stat-accuracy">0%</div>
+              <div class="text-xs text-gray-500 mt-1">正确率</div>
             </div>
           </div>
         </div>
       </main>
 
-      <footer class="text-center py-4 text-xs text-gray-400">
+      <footer class="text-center py-6 text-xs text-gray-400">
         智能学习助手 · 数据仅存储在本地
       </footer>
     </div>
