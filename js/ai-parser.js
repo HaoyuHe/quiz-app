@@ -182,18 +182,20 @@ ${text.substring(0, 15000)} ${text.length > 15000 ? '\n...(内容已截断)' : '
    * 解析文件（优先使用 AI，失败则回退到规则解析）
    */
   async parseFile(file, useAI = true, onProgress = () => {}) {
-    const text = await this.extractText(file);
-    
+    // 如果启用 AI 且已配置，先尝试 AI 解析
     if (useAI && this.isConfigured()) {
       try {
+        const text = await this.extractText(file);
         return await this.parseWithAI(text, onProgress);
       } catch (err) {
         console.warn('AI 解析失败，回退到规则解析:', err);
         onProgress(0);
+        // 重新读取文件（因为 arrayBuffer 只能读一次）
         return Parser.parseFile(file, onProgress);
       }
     }
     
+    // 不使用 AI，直接用规则解析
     return Parser.parseFile(file, onProgress);
   }
 };

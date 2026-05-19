@@ -233,6 +233,10 @@ const ImportPage = {
     const fileInput = document.getElementById('file-input');
     if (!dropZone || !fileInput) return;
 
+    // 防止重复绑定
+    if (dropZone.dataset.bound === 'true') return;
+    dropZone.dataset.bound = 'true';
+
     dropZone.addEventListener('click', () => fileInput.click());
     dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
@@ -240,11 +244,17 @@ const ImportPage = {
       e.preventDefault();
       dropZone.classList.remove('dragover');
       const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.docx') || f.name.endsWith('.pdf'));
-      if (files.length > 0) ImportPage.handleFiles(files);
+      if (files.length > 0) {
+        console.log('[DropZone] 收到文件:', files.map(f => f.name));
+        ImportPage.handleFiles(files);
+      }
     });
     fileInput.addEventListener('change', (e) => {
       const files = Array.from(e.target.files);
-      if (files.length > 0) ImportPage.handleFiles(files);
+      if (files.length > 0) {
+        console.log('[FileInput] 选择文件:', files.map(f => f.name));
+        ImportPage.handleFiles(files);
+      }
       fileInput.value = '';
     });
   },
@@ -263,10 +273,14 @@ const ImportPage = {
   },
 
   async handleFiles(files) {
+    console.log('[ImportPage] handleFiles 被调用, 文件数量:', files.length);
+    
     const fileList = document.getElementById('file-list');
     const parseProgress = document.getElementById('parse-progress');
     const parsePreview = document.getElementById('parse-preview');
     const useAI = document.getElementById('use-ai-parse').checked;
+    
+    console.log('[ImportPage] useAI:', useAI, 'AIParser.isConfigured:', AIParser.isConfigured());
 
     // 获取题库名称
     const nameInput = document.getElementById('bank-name-input');
@@ -296,15 +310,18 @@ const ImportPage = {
       statusEls[i].className = 'file-status text-xs text-primary-500 font-medium';
 
       try {
+        console.log(`[ImportPage] 开始解析文件 ${i + 1}:`, files[i].name);
         const questions = await AIParser.parseFile(files[i], useAI, (percent) => {
           const totalProgress = Math.round(((i + percent / 100) / files.length) * 100);
           document.getElementById('parse-progress-bar').style.width = totalProgress + '%';
           document.getElementById('parse-progress-text').textContent = totalProgress + '%';
         });
+        console.log(`[ImportPage] 文件 ${files[i].name} 解析完成, 题目数:`, questions.length);
         this.parsedQuestions.push(...questions);
         statusEls[i].textContent = `✓ ${questions.length}题`;
         statusEls[i].className = 'file-status text-xs text-green-500 font-medium';
       } catch (err) {
+        console.error(`[ImportPage] 文件 ${files[i].name} 解析失败:`, err);
         statusEls[i].textContent = '✗ ' + err.message;
         statusEls[i].className = 'file-status text-xs text-red-500 font-medium';
       }
