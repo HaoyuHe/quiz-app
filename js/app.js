@@ -8,7 +8,6 @@ const App = {
   async init() {
     await DB.init();
     await this.updateHomeStats();
-    this._setupDropZone();
     this._setupGreeting();
   },
 
@@ -21,7 +20,7 @@ const App = {
     }
     switch (page) {
       case 'home': this.updateHomeStats(); break;
-      case 'import': ImportPage.init(); this._setupDropZone(); break;
+      case 'import': ImportPage.init(); break;
       case 'practice-setup': PracticeSetup.init(); break;
       case 'exam-setup': ExamSetup.init(); break;
       case 'wrong-book': WrongBook.init(); break;
@@ -100,27 +99,6 @@ const App = {
     else if (hour < 18) greeting = '下午好，继续加油';
     else if (hour < 22) greeting = '晚上好呀';
     document.getElementById('greeting-text').textContent = greeting;
-  },
-
-  _setupDropZone() {
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
-    if (!dropZone || !fileInput) return;
-
-    dropZone.addEventListener('click', () => fileInput.click());
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('dragover');
-      const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.docx') || f.name.endsWith('.pdf'));
-      if (files.length > 0) ImportPage.handleFiles(files);
-    });
-    fileInput.addEventListener('change', (e) => {
-      const files = Array.from(e.target.files);
-      if (files.length > 0) ImportPage.handleFiles(files);
-      fileInput.value = '';
-    });
   },
 
   showToast(message, type = 'info') {
@@ -223,6 +201,7 @@ const BankManage = {
 const ImportPage = {
   parsedQuestions: [],
   currentBankName: '',
+  _initialized: false,
 
   init() {
     // 加载 AI 配置
@@ -234,11 +213,39 @@ const ImportPage = {
     if (key) document.getElementById('ai-api-key').value = key;
     if (model) document.getElementById('ai-model').value = model;
 
-    // 绑定 AI 启用切换
-    const useAI = document.getElementById('use-ai-parse');
-    const configPanel = document.getElementById('ai-config-panel');
-    useAI.addEventListener('change', (e) => {
-      configPanel.style.display = e.target.checked ? 'block' : 'none';
+    // 只绑定一次事件
+    if (!this._initialized) {
+      this._setupDropZone();
+      
+      // 绑定 AI 启用切换
+      const useAI = document.getElementById('use-ai-parse');
+      const configPanel = document.getElementById('ai-config-panel');
+      useAI.addEventListener('change', (e) => {
+        configPanel.style.display = e.target.checked ? 'block' : 'none';
+      });
+      
+      this._initialized = true;
+    }
+  },
+
+  _setupDropZone() {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    if (!dropZone || !fileInput) return;
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.docx') || f.name.endsWith('.pdf'));
+      if (files.length > 0) ImportPage.handleFiles(files);
+    });
+    fileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length > 0) ImportPage.handleFiles(files);
+      fileInput.value = '';
     });
   },
 
