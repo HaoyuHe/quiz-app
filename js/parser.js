@@ -66,9 +66,56 @@ const Parser = {
   _extractQuestions(text, source) {
     const questions = [];
     
-    // 按题号拆分（支持 1、2、3... 格式）
-    // 匹配：数字 + 顿号/点/括号 + 空格（可选）
-    const questionBlocks = text.split(/(?=\n\s*\d+[、.．)）]\s*)/);
+    // 预处理：为缺少题号但紧跟选项的行补上题号
+    const lines = text.split('\n');
+    let lastQuestionNum = 0;
+    const processedLines = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      const numMatch = line.match(/^(\d+)[、.．)）]\s*/);
+      
+      if (numMatch) {
+        lastQuestionNum = parseInt(numMatch[1]);
+        processedLines.push(lines[i]);
+      } else if (
+        line.length > 10 &&
+        !numMatch &&
+        !line.match(/^[A-F][\.．\s]/) &&
+        !line.match(/^(?:答案|正确答案)/) &&
+        !line.match(/^◦/) &&
+        !line.match(/^(?:单选|多选|判断|填空)/)
+      ) {
+        // 检查上一行是否是题目内容的延续（非选项、非答案、非空行）
+        const prevLine = (i > 0) ? lines[i - 1].trim() : '';
+        const isContinuation = prevLine.length > 5 &&
+          !prevLine.match(/^[A-F][\.．\s]/) &&
+          !prevLine.match(/^(?:答案|正确答案)/) &&
+          !prevLine.match(/^◦/);
+        
+        if (isContinuation) {
+          // 这是上一题的内容延续，不补题号
+          processedLines.push(lines[i]);
+          continue;
+        }
+        
+        // 检查下一行是否是选项
+        const nextLine = (i + 1 < lines.length) ? lines[i + 1].trim() : '';
+        if (nextLine.match(/^[A-F][\.．\s]/)) {
+          lastQuestionNum++;
+          processedLines.push(`${lastQuestionNum}、${line}`);
+          continue;
+        }
+        processedLines.push(lines[i]);
+      } else {
+        processedLines.push(lines[i]);
+      }
+    }
+    
+    const processedText = processedLines.join('\n');
+
+    // 按题号拆分
+    const questionBlocks = processedText.split(/(?=\n\s*\d+[、.．)）]\s*)/);
     
     for (const block of questionBlocks) {
       const q = this._parseQuestionBlock(block.trim(), source);
@@ -127,11 +174,25 @@ const Parser = {
 
     let i = 1; // 从第二行开始处理
 
-    // 提取选项（A. B. C. D. 格式）
+    // 收集多行题目内容（选项行之前的所有非选项行）
     while (i < lines.length) {
       const line = lines[i];
-      // 检测选项行: A. / B. / C. / D.（支持中英文点号）
-      const optionMatch = line.match(/^([A-F])[\.．]\s*(.+)$/);
+      // 检测是否是选项行
+      const isOptionLine = line.match(/^([A-F])[\.．\s]\s*.+/);
+      if (!isOptionLine) {
+        // 不是选项行 → 追加到题目内容
+        questionText += ' ' + line;
+        i++;
+      } else {
+        break;
+      }
+    }
+
+    // 提取选项（A. B. C. D. 格式或 A B C D 空格格式）
+    while (i < lines.length) {
+      const line = lines[i];
+      // 检测选项行: A. / B. / C. / D.（支持中英文点号或空格）
+      const optionMatch = line.match(/^([A-F])[\.．\s]\s*(.+)$/);
       if (optionMatch) {
         options.push(optionMatch[2].trim());
         i++;
@@ -150,6 +211,24 @@ const Parser = {
           break;
         }
       }
+    }
+
+    // 判断题检测：选项为正确/错误 或 答案含正确/错误
+    const isJudgmentOptions = options.length === 2 && options.every(o => /正确|错误/.test(o));
+    if (isJudgmentOptions) {
+      type = 'judgment';
+      // 处理答案格式：B错误 → 错误, A正确 → 正确
+      if (answer) {
+        const judgmentMap = { '正确': '正确', '错误': '错误', '√': '正确', '×': '错误', 'A': '正确', 'B': '错误' };
+        const answerLetter = answer.replace(/[^AB]/g, '');
+        const answerText = answer.replace(/[^正确错误]/g, '');
+        if (answerText === '正确' || answerText === '错误') {
+          answer = answerText;
+        } else if (judgmentMap[answerLetter]) {
+          answer = judgmentMap[answerLetter];
+        }
+      }
+      options = ['正确', '错误'];
     }
 
     // 如果没有选项但有答案，可能是填空题或判断题
@@ -172,7 +251,8 @@ const Parser = {
       }
     } else {
       // 有选项，判断是单选还是多选
-      if (/^[A-D]{2,4}$/.test(answer)) {
+      const cleanAnswer = answer ? answer.toUpperCase().replace(/[^A-Z]/g, '') : '';
+      if (/^[A-D]{2,4}$/.test(cleanAnswer)) {
         type = 'multiple';
       }
     }

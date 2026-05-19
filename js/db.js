@@ -178,12 +178,24 @@ const DB = {
 
   async getAllWrongQuestions() {
     const result = await this._fetch('/api/wrong');
+    const banks = await this.getAllBanks();
+    const bankMap = {};
+    banks.forEach(b => bankMap[b.id] = b.name);
     return result.map(r => ({
       questionId: r.questionId,
       wrongCount: r.wrongCount || 1,
       lastWrongAt: r.createdAt,
-      mastered: false
+      mastered: false,
+      bankId: r.question ? r.question.bankId : null,
+      bankName: (r.question && bankMap[r.question.bankId]) || '未知题库',
+      question: r.question
     }));
+  },
+
+  async getWrongQuestionsByBank(bankId) {
+    const all = await this.getAllWrongQuestions();
+    if (!bankId || bankId === 'all') return all;
+    return all.filter(r => r.bankId === bankId);
   },
 
   async getWrongQuestionCount() {

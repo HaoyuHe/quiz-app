@@ -42,26 +42,22 @@ const App = {
     if (banks.length > 0) {
       overview.classList.remove('hidden');
       overviewList.innerHTML = banks.slice(0, 4).map(bank => `
-        <div class="bg-white rounded-xl p-3 border border-gray-100 text-center">
-          <div class="text-lg font-bold text-primary-500">${bank.questionCount}</div>
-          <div class="text-xs text-gray-500 truncate">${bank.name}</div>
+        <div class="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-3 text-center">
+          <div class="text-xl font-bold text-primary-700">${bank.questionCount}</div>
+          <div class="text-xs text-primary-600 truncate">${bank.name}</div>
         </div>
       `).join('');
     } else {
       overview.classList.add('hidden');
     }
 
-    // 错题数量 - 新版UI（徽章和小圆点）
+    // 错题数量
     const wrongBadge = document.getElementById('wrong-count-badge');
-    const wrongDot = document.getElementById('wrong-count-dot');
     if (wrongCount > 0) {
       wrongBadge.classList.remove('hidden');
-      wrongDot.classList.remove('hidden');
       document.getElementById('wrong-count').textContent = wrongCount;
-      wrongDot.textContent = wrongCount > 99 ? '99+' : wrongCount;
     } else {
       wrongBadge.classList.add('hidden');
-      wrongDot.classList.add('hidden');
     }
 
     // 统计
@@ -245,14 +241,12 @@ const ImportPage = {
       dropZone.classList.remove('dragover');
       const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.docx') || f.name.endsWith('.pdf'));
       if (files.length > 0) {
-        console.log('[DropZone] 收到文件:', files.map(f => f.name));
         ImportPage.handleFiles(files);
       }
     });
     fileInput.addEventListener('change', (e) => {
       const files = Array.from(e.target.files);
       if (files.length > 0) {
-        console.log('[FileInput] 选择文件:', files.map(f => f.name));
         ImportPage.handleFiles(files);
       }
       fileInput.value = '';
@@ -273,14 +267,10 @@ const ImportPage = {
   },
 
   async handleFiles(files) {
-    console.log('[ImportPage] handleFiles 被调用, 文件数量:', files.length);
-    
     const fileList = document.getElementById('file-list');
     const parseProgress = document.getElementById('parse-progress');
     const parsePreview = document.getElementById('parse-preview');
     const useAI = document.getElementById('use-ai-parse').checked;
-    
-    console.log('[ImportPage] useAI:', useAI, 'AIParser.isConfigured:', AIParser.isConfigured());
 
     // 获取题库名称
     const nameInput = document.getElementById('bank-name-input');
@@ -310,18 +300,15 @@ const ImportPage = {
       statusEls[i].className = 'file-status text-xs text-primary-500 font-medium';
 
       try {
-        console.log(`[ImportPage] 开始解析文件 ${i + 1}:`, files[i].name);
         const questions = await AIParser.parseFile(files[i], useAI, (percent) => {
           const totalProgress = Math.round(((i + percent / 100) / files.length) * 100);
           document.getElementById('parse-progress-bar').style.width = totalProgress + '%';
           document.getElementById('parse-progress-text').textContent = totalProgress + '%';
         });
-        console.log(`[ImportPage] 文件 ${files[i].name} 解析完成, 题目数:`, questions.length);
         this.parsedQuestions.push(...questions);
         statusEls[i].textContent = `✓ ${questions.length}题`;
         statusEls[i].className = 'file-status text-xs text-green-500 font-medium';
       } catch (err) {
-        console.error(`[ImportPage] 文件 ${files[i].name} 解析失败:`, err);
         statusEls[i].textContent = '✗ ' + err.message;
         statusEls[i].className = 'file-status text-xs text-red-500 font-medium';
       }
@@ -385,8 +372,11 @@ const ImportPage = {
   }
 };
 
-// ========== 练习设置 ==========
+// ========== 练习设置（顺序练习） ==========
 const PracticeSetup = {
+  _allQuestions: [],
+  _selectedStartIndex: 0,
+
   async init() {
     const banks = await DB.getAllBanks();
     const container = document.getElementById('practice-banks-container');
@@ -396,7 +386,6 @@ const PracticeSetup = {
       return;
     }
 
-    // 为每个题库创建选择卡片
     container.innerHTML = banks.map(bank => `
       <div class="bank-selector bg-gray-50 rounded-xl p-4 border border-gray-200" data-bank-id="${bank.id}">
         <label class="flex items-center gap-3 cursor-pointer">
@@ -426,7 +415,6 @@ const PracticeSetup = {
       </div>
     `).join('');
 
-    // 绑定题库选择切换事件
     container.querySelectorAll('.bank-checkbox').forEach(cb => {
       cb.addEventListener('change', (e) => {
         const typeFilter = e.target.closest('.bank-selector').querySelector('.type-filter');
@@ -434,45 +422,80 @@ const PracticeSetup = {
         typeFilter.style.pointerEvents = e.target.checked ? 'auto' : 'none';
       });
     });
+
+    // 预加载题目，生成跳转按钮
+    await this._updateRangeButtons();
   },
 
-  async start() {
-    const count = parseInt(document.getElementById('practice-count').value);
+  async _updateRangeButtons() {
     const container = document.getElementById('practice-banks-container');
-    
-    // 收集选中的题库配置
     const bankConfigs = [];
     container.querySelectorAll('.bank-selector').forEach(selector => {
       const checkbox = selector.querySelector('.bank-checkbox');
       if (checkbox.checked) {
         const bankId = checkbox.value;
         const types = Array.from(selector.querySelectorAll('.type-checkbox:checked')).map(cb => cb.value);
-        if (types.length > 0) {
-          bankConfigs.push({ bankId, types });
-        }
+        if (types.length > 0) bankConfigs.push({ bankId, types });
       }
     });
 
+    const rangeSection = document.getElementById('practice-range-section');
+    const rangeButtons = document.getElementById('practice-range-buttons');
+
     if (bankConfigs.length === 0) {
-      App.showToast('请至少选择一个题库', 'warning');
+      rangeSection.classList.add('hidden');
+      this._allQuestions = [];
       return;
     }
 
-    // 获取多题库组合的题目
     const questions = await DB.getQuestionsByMultiBanks(bankConfigs);
+    this._allQuestions = questions;
+    this._selectedStartIndex = 0;
+
     if (questions.length === 0) {
+      rangeSection.classList.add('hidden');
+      return;
+    }
+
+    rangeSection.classList.remove('hidden');
+    const total = questions.length;
+    const segmentSize = 20;
+    const segments = Math.ceil(total / segmentSize);
+
+    let html = `<button onclick="PracticeSetup._selectRange(0)" class="practice-range-btn active px-3 py-1.5 rounded-full text-sm font-medium bg-primary-500 text-white transition" data-start="0">1-${Math.min(20, total)}</button>`;
+
+    for (let i = 1; i < segments; i++) {
+      const start = i * segmentSize;
+      const end = Math.min(start + segmentSize, total);
+      html += `<button onclick="PracticeSetup._selectRange(${start})" class="practice-range-btn px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition" data-start="${start}">${start + 1}-${end}</button>`;
+    }
+
+    rangeButtons.innerHTML = html;
+  },
+
+  _selectRange(startIndex) {
+    this._selectedStartIndex = startIndex;
+    document.querySelectorAll('.practice-range-btn').forEach(btn => {
+      if (parseInt(btn.dataset.start) === startIndex) {
+        btn.className = 'practice-range-btn active px-3 py-1.5 rounded-full text-sm font-medium bg-primary-500 text-white transition';
+      } else {
+        btn.className = 'practice-range-btn px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition';
+      }
+    });
+  },
+
+  async start() {
+    if (this._allQuestions.length === 0) {
       App.showToast('没有符合条件的题目', 'warning');
       return;
     }
 
-    // 如果题目数量超过设定值，随机抽取
-    let selected = questions;
-    if (questions.length > count) {
-      selected = QuizEngine.drawQuestions(questions, count);
-    }
+    // 顺序练习：从选定位置开始，只取一段（20题）
+    const questions = this._allQuestions.slice(this._selectedStartIndex, this._selectedStartIndex + 20);
 
-    QuizEngine.createSession({ mode: 'practice', questionCount: selected.length });
-    QuizEngine.session.questions = selected;
+    QuizEngine.createSession({ mode: 'practice', questionCount: questions.length });
+    QuizEngine.session.questions = questions;
+    QuizEngine.session.ordered = true; // 标记为顺序模式
 
     QuizPage.init('practice');
     App.navigate('quiz');
@@ -587,7 +610,7 @@ const QuizPage = {
     const modeLabel = document.getElementById('quiz-mode-label');
     const timerEl = document.getElementById('quiz-timer');
 
-    modeLabel.textContent = mode === 'exam' ? '模拟考试' : mode === 'wrong' ? '错题练习' : '抽查练习';
+    modeLabel.textContent = mode === 'exam' ? '模拟考试' : mode === 'wrong' ? '错题练习' : '顺序练习';
 
     if (mode === 'exam') {
       timerEl.classList.remove('hidden');
@@ -603,6 +626,14 @@ const QuizPage = {
     }
 
     this._renderQuestion();
+
+    // 顺序练习模式显示跳转按钮
+    const jumpBtn = document.getElementById('btn-quiz-jump');
+    if (session && session.ordered) {
+      jumpBtn.classList.remove('hidden');
+    } else {
+      jumpBtn.classList.add('hidden');
+    }
   },
 
   _updateTimerDisplay(seconds) {
@@ -807,6 +838,71 @@ const QuizPage = {
     QuizEngine.session = null;
     document.getElementById('exit-modal').classList.add('hidden');
     App.navigate('home');
+  },
+
+  // 跳转功能（顺序练习模式）
+  showJumpModal() {
+    const session = QuizEngine.session;
+    if (!session || !session.questions) return;
+    const total = session.questions.length;
+    const segmentSize = 20;
+    const segments = Math.ceil(total / segmentSize);
+    const currentIdx = session.currentIndex || 0;
+
+    let html = '';
+    for (let i = 0; i < segments; i++) {
+      const start = i * segmentSize;
+      const end = Math.min(start + segmentSize, total);
+      const isCurrent = currentIdx >= start && currentIdx < end;
+      html += `<button onclick="QuizPage.jumpTo(${start})" class="px-3 py-1.5 rounded-full text-sm font-medium transition ${isCurrent ? 'bg-primary-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">${start + 1}-${end}</button>`;
+    }
+
+    document.getElementById('quiz-jump-list').innerHTML = html;
+    document.getElementById('quiz-jump-modal').classList.remove('hidden');
+  },
+
+  hideJumpModal() {
+    document.getElementById('quiz-jump-modal').classList.add('hidden');
+  },
+
+  jumpTo(index) {
+    const session = QuizEngine.session;
+    if (!session || !session.questions) return;
+    if (index < 0 || index >= session.questions.length) return;
+
+    // 如果是提交状态，确认跳转
+    if (this.submitted && !confirm('当前题目已作答，跳转将直接显示答案。确定要跳转吗？')) return;
+
+    session.currentIndex = index;
+    this.submitted = true; // 标记为已提交状态，直接显示
+    this._renderQuestion();
+    
+    // 自动提交并显示答案（学习模式直接看答案）
+    const question = session.questions[index];
+    if (question.type === 'fill') {
+      document.getElementById('fill-input').value = '';
+    }
+    
+    // 显示答案
+    document.getElementById('quiz-feedback').classList.remove('hidden');
+    document.getElementById('quiz-feedback').className = 'rounded-xl p-4 mb-6 bg-blue-50 border border-blue-200 bounce-in';
+    document.getElementById('feedback-emoji').textContent = '📖';
+    document.getElementById('feedback-text').textContent = '参考答案';
+    document.getElementById('feedback-text').className = 'font-semibold text-blue-700';
+    document.getElementById('feedback-explanation').innerHTML = `<p class="font-medium text-gray-700">正确答案：${question.answer}</p>`;
+    document.getElementById('btn-submit').classList.add('hidden');
+    if (index >= session.questions.length - 1) {
+      document.getElementById('btn-finish').classList.remove('hidden');
+    } else {
+      document.getElementById('btn-next').classList.remove('hidden');
+    }
+
+    // 更新进度条
+    const progress = QuizEngine.getProgress();
+    document.getElementById('quiz-progress-bar').style.width = progress.percent + '%';
+    document.getElementById('quiz-progress-text').textContent = `${progress.current}/${progress.total}`;
+
+    this.hideJumpModal();
   }
 };
 
@@ -890,8 +986,48 @@ const ResultPage = {
 
 // ========== 错题本 ==========
 const WrongBook = {
+  _currentFilter: 'all',
+  _allWrongRecords: [],
+
   async init() {
-    const wrongRecords = await DB.getAllWrongQuestions();
+    this._allWrongRecords = await DB.getAllWrongQuestions();
+    this._currentFilter = 'all';
+
+    // 生成题库筛选按钮
+    const bankIds = [...new Set(this._allWrongRecords.map(r => r.bankId).filter(Boolean))];
+    const banks = await DB.getAllBanks();
+    const filterContainer = document.getElementById('wrong-bank-filter');
+
+    if (bankIds.length > 1) {
+      filterContainer.classList.remove('hidden');
+      let btns = `<button onclick="WrongBook.filterByBank('all')" class="wrong-filter-btn active px-3 py-1.5 rounded-full text-sm font-medium bg-primary-500 text-white transition" data-bank="all">全部错题</button>`;
+      bankIds.forEach(bId => {
+        const bank = banks.find(b => b.id === bId);
+        const name = bank ? bank.name : '未知题库';
+        btns += `<button onclick="WrongBook.filterByBank('${bId}')" class="wrong-filter-btn px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition" data-bank="${bId}">${name}</button>`;
+      });
+      filterContainer.innerHTML = btns;
+    } else {
+      filterContainer.classList.add('hidden');
+    }
+
+    this._renderList(this._allWrongRecords);
+  },
+
+  filterByBank(bankId) {
+    this._currentFilter = bankId;
+    document.querySelectorAll('.wrong-filter-btn').forEach(btn => {
+      if (btn.dataset.bank === bankId) {
+        btn.className = 'wrong-filter-btn active px-3 py-1.5 rounded-full text-sm font-medium bg-primary-500 text-white transition';
+      } else {
+        btn.className = 'wrong-filter-btn px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition';
+      }
+    });
+    const filtered = bankId === 'all' ? this._allWrongRecords : this._allWrongRecords.filter(r => r.bankId === bankId);
+    this._renderList(filtered);
+  },
+
+  _renderList(wrongRecords) {
     const emptyEl = document.getElementById('wrong-empty');
     const listEl = document.getElementById('wrong-list');
     const practiceBtn = document.getElementById('btn-practice-wrong');
@@ -909,20 +1045,18 @@ const WrongBook = {
     practiceBtn.classList.remove('hidden');
     exportPdfBtn.classList.remove('hidden');
 
-    const questionIds = wrongRecords.map(r => r.questionId);
-    const questions = await DB.getQuestionsByIds(questionIds);
-
     const typeLabels = { single: '单选', multiple: '多选', judgment: '判断', fill: '填空' };
 
-    listEl.innerHTML = questions.map(q => {
-      const record = wrongRecords.find(r => r.questionId === q.id);
+    listEl.innerHTML = wrongRecords.map(r => {
+      const q = r.question;
       return `
         <div class="bg-white rounded-xl p-4 border border-gray-100">
           <div class="flex items-start justify-between gap-3">
             <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1">
+              <div class="flex items-center gap-2 mb-1 flex-wrap">
                 <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">${typeLabels[q.type] || '未知'}</span>
-                <span class="text-xs text-red-400">错${record ? record.wrongCount : 0}次</span>
+                <span class="text-xs text-red-400">错${r.wrongCount}次</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-primary-50 text-primary-600">${r.bankName}</span>
               </div>
               <p class="text-sm text-gray-700">${q.question}</p>
               <p class="text-xs text-green-500 mt-1">答案: ${q.answer}</p>
@@ -937,7 +1071,11 @@ const WrongBook = {
   },
 
   async practiceWrong() {
-    const wrongRecords = await DB.getAllWrongQuestions();
+    const bankId = this._currentFilter;
+    const wrongRecords = bankId === 'all'
+      ? this._allWrongRecords
+      : this._allWrongRecords.filter(r => r.bankId === bankId);
+
     if (wrongRecords.length === 0) {
       App.showToast('没有错题需要练习', 'info');
       return;
