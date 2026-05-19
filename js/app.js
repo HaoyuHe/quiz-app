@@ -21,7 +21,7 @@ const App = {
     }
     switch (page) {
       case 'home': this.updateHomeStats(); break;
-      case 'import': ImportPage.init(); break;
+      case 'import': ImportPage.init(); this._setupDropZone(); break;
       case 'practice-setup': PracticeSetup.init(); break;
       case 'exam-setup': ExamSetup.init(); break;
       case 'wrong-book': WrongBook.init(); break;
